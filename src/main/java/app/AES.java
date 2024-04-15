@@ -54,7 +54,7 @@ public class AES {
 
 	}
 
-	private static byte[] encrypt(String plaintext, String key) {
+	static byte[] encrypt(String plaintext, String key) {
 		byte[] bytePlaintext = plaintext.getBytes();
 		byte[] byteKey = key.getBytes();
 		
@@ -178,24 +178,38 @@ public class AES {
 			state[i * 4 + 1] = (byte) (a ^ mul((byte) 0x02, b) ^ mul((byte) 0x03, c) ^ d);
 			state[i * 4 + 2] = (byte) (a ^ b ^ mul((byte) 0x02, c) ^ mul((byte) 0x03, d));
 			state[i * 4 + 3] = (byte) (mul((byte) 0x03, a) ^ b ^ c ^ mul((byte) 0x02, d));
+//			System.out.println(a + " " + mul((byte) 0x03, a));
 		}
 	}
 
 	private static byte mul(byte a, byte b) {
 		byte p = 0;
 		byte highBit = 0;
-
+//		System.out.println();  
+		//i = 0:  b = 14: 00001110    p:  0    a = 11: 00001011         
+		//i = 1:  b =  7: 00000111    p: 22    a = 22: 00010110         
+		//i = 2:  b =  3: 00000011    p: 58    a = 44: 00101100		
+		//i = 3:  b =  1: 00000001    p: 98    a = 88: 01011000	
+		//i = 4:  b =  0: 00000000    p: 98    a = 88: 01011000	
+//		System.out.println("a,b = " + a + " " + b);
 		for (int i = 0; i < 8; i++) {
+//			System.out.println("i: " + i + " " + a + " " + b +  " "  + p);
 			if ((b & 1) == 1) {
 				p ^= a;
 			}
 			highBit = (byte) (a & 0x80);
+//			System.out.print(highBit + " ");
 			a <<= 1;
 			if (highBit == (byte) 0x80) {
 				a ^= 0x1B;
+//				System.out.print(a);
 			}
 			b >>= 1;
+//			System.out.println();
+//			System.out.println("i: " + i + " " + a + " " + b +  " "  + p);
 		}
+//		System.out.println("p = " +p);
+//		System.out.println();
 		return p;
 	}
 
@@ -207,9 +221,8 @@ public class AES {
 		}
 	}
 
-	private static String encodeBase64(byte[] input) {
+	static String encodeBase64(byte[] input) {
 		StringBuilder result = new StringBuilder();
-		int paddingCount = (3 - input.length % 3) % 3;
 		for (int i = 0; i < input.length; i += 3) {
 			int chunk = (input[i] & 0xFF) << 16 | (i + 1 < input.length ? input[i + 1] & 0xFF : 0) << 8
 					| (i + 2 < input.length ? input[i + 2] & 0xFF : 0);
@@ -224,7 +237,7 @@ public class AES {
 		return result.toString();
 	}
 
-	private static StringBuilder decryptedToString(byte[] arr) {
+	static StringBuilder decryptedToString(byte[] arr) {
 		StringBuilder decryptedString = new StringBuilder();
 		for (int value : arr) {
 			decryptedString.append((char) value);
@@ -232,7 +245,7 @@ public class AES {
 		return decryptedString;
 	}
 
-	private static byte[] decrypt(byte[] ciphertext, String subkey) {
+	static byte[] decrypt(byte[] ciphertext, String subkey) {
 		int[][] subkeys = generateSubkeys(subkey.getBytes());
 		byte[] decrypted = new byte[ciphertext.length];
 
